@@ -1,0 +1,648 @@
+<div class="h-screen font-sans antialiased">
+  
+  <!-- Main Content -->
+  <main id="main-content" class="h-full w-full overflow-y-auto" (scroll)="onMainScroll($event)">
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-7xl">
+      <header class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+        <div>
+          <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+            Content Idea Generator
+          </h1>
+          <p class="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400">Fuel your creativity with AI-powered content concepts and scripts.</p>
+        </div>
+        <div class="flex items-center gap-2 self-start sm:self-center flex-shrink-0">
+          <!-- Theme Toggle -->
+          <button (click)="toggleTheme()" [title]="'Switch to ' + (theme() === 'dark' ? 'light' : 'dark') + ' mode'" class="p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            @if(theme() === 'dark') {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm-.707 12.122l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414-1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z" clip-rule="evenodd" /></svg>
+            } @else {
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+            }
+          </button>
+          <!-- Import/Export Buttons -->
+          <input #importFileInput type="file" class="hidden" accept=".json" (change)="handleFileImport($event)">
+          <button (click)="triggerImport()" title="Import Data" class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" /></svg>
+            <span class="hidden sm:inline">Import</span>
+          </button>
+          <button (click)="exportData()" title="Export Data" class="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+            <span class="hidden sm:inline">Export</span>
+          </button>
+        </div>
+      </header>
+
+      <div class="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl shadow-black/20 p-6 border border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-1 gap-6">
+          <div class="flex flex-col gap-2">
+            <label for="topic" class="font-semibold text-gray-700 dark:text-gray-300">Content Topic</label>
+            <textarea id="topic" appAutoresize [value]="topic()" (input)="topic.set($event.target.value)" placeholder="e.g., Viral marketing for a tech startup" class="w-full min-h-[80px] p-3 bg-gray-100/50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none overflow-hidden"></textarea>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="columns" class="font-semibold text-gray-700 dark:text-gray-300">Custom Columns</label>
+            <app-chip-input [(chips)]="customColumns"/>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">'Idea' column is always included.</p>
+          </div>
+        </div>
+        <div class="mt-6 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-6">
+          <div class="flex flex-col sm:flex-row w-full md:w-auto items-stretch sm:items-end gap-3">
+            <button (click)="generateIdeas()" [disabled]="loadingIdeas() || !topic().trim()" class="relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 h-full flex-grow sm:flex-grow-0">
+              @if (loadingIdeas()) {
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Generating...
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                Generate Ideas
+              }
+            </button>
+            <div class="w-full sm:w-auto">
+              <label for="initial-generation-count" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1 text-center">Jumlah</label>
+              <input id="initial-generation-count" type="number" min="1" max="50" [value]="initialGenerationCount()" (input)="initialGenerationCount.set(+$event.target.value || 10)" class="w-full sm:w-20 bg-gray-100/50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-center text-lg font-bold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"/>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center justify-center gap-2">
+              <!-- History Dropdown -->
+              <div #historyDropdown class="relative inline-block text-left">
+                <div>
+                  <button (click)="toggleHistoryDropdown()" type="button" class="inline-flex items-center gap-x-2 rounded-md bg-gray-200/50 dark:bg-gray-700/50 px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 shadow-sm hover:bg-gray-200 dark:hover:bg-gray-700" id="menu-button" aria-expanded="true" aria-haspopup="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
+                    History
+                    <svg class="-mr-1 h-5 w-5 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+
+                @if (isHistoryDropdownOpen()) {
+                  <div class="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-200 dark:border-gray-700" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                    <div class="py-1 max-h-96 overflow-y-auto" role="none">
+                      @if(history().length > 0) {
+                        @for (item of history(); track trackByHistoryItem($index, item)) {
+                          <div class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/60 relative group" role="menuitem" tabindex="-1" [id]="'menu-item-' + $index">
+                            <button (click)="setActiveHistory(item.id)" class="w-full text-left">
+                               <p class="font-semibold truncate" [class.text-indigo-500]="activeHistoryId() === item.id" [class.dark:text-indigo-400]="activeHistoryId() === item.id" [title]="item.topic">{{ item.topic }}</p>
+                               <span class="text-xs text-gray-400 dark:text-gray-500">{{ formatTimestampForHistory(item.timestamp) }}</span>
+                            </button>
+                            <button (click)="$event.stopPropagation(); deleteHistoryItem(item.id)" class="absolute top-1/2 -translate-y-1/2 right-2 p-1 rounded-full text-gray-400 dark:text-gray-500 hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-500 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100" title="Delete this history item">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            </button>
+                          </div>
+                        }
+                      } @else {
+                        <p class="px-4 py-3 text-sm text-gray-500 text-center">No history yet.</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+              
+              <!-- View Mode Toggle -->
+              <div class="flex items-center rounded-lg bg-gray-200/50 dark:bg-gray-700/50 p-1">
+                <button (click)="setViewMode('normal')" title="Normal View" class="p-2 rounded-md transition-colors flex items-center" [class.bg-indigo-600]="viewMode() === 'normal'" [class.text-white]="viewMode() === 'normal'" [class.text-gray-600]="viewMode() !== 'normal'" [class.dark:text-gray-300]="viewMode() !== 'normal'" [class.hover:bg-gray-200]="viewMode() !== 'normal'" [class.dark:hover:bg-gray-700]="viewMode() !== 'normal'">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
+                </button>
+                <button (click)="setViewMode('compact')" title="Compact View for Excel" class="p-2 rounded-md transition-colors flex items-center" [class.bg-indigo-600]="viewMode() === 'compact'" [class.text-white]="viewMode() === 'compact'" [class.text-gray-600]="viewMode() !== 'compact'" [class.dark:text-gray-300]="viewMode() !== 'compact'" [class.hover:bg-gray-200]="viewMode() !== 'compact'" [class.dark:hover:bg-gray-700]="viewMode() !== 'compact'">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>
+                </button>
+              </div>
+
+              <button (click)="openResetConfirmModal()" title="Hapus Semua Data" class="p-2 text-sm font-semibold text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-900/50 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/80 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.067-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                <span class="sr-only">Hapus Semua Data</span>
+              </button>
+          </div>
+        </div>
+      </div>
+
+      @if (apiError()) {
+        <div class="mt-6 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-center">
+          <p><strong class="font-bold">Error:</strong> {{ apiError() }}</p>
+        </div>
+      }
+
+      <div class="mt-8">
+        @if (loadingIdeas() && currentIdeas().length === 0) {
+          <div class="space-y-4">
+            @for (_ of [1,2,3]; track $index) { <div class="w-full h-16 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse"></div> }
+          </div>
+        } @else if (currentIdeas().length > 0) {
+            <div class="mb-4 flex justify-end">
+              <button (click)="openBatchGenerateModal()" [disabled]="currentIdeas().length === 0" class="inline-flex items-center justify-center px-5 py-2 font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" /></svg>
+                Generate Narrations
+              </button>
+            </div>
+            @if (viewMode() === 'normal') {
+              <!-- Normal View -->
+              <div class="overflow-x-auto bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                <table class="responsive-table w-full text-sm text-left text-gray-700 dark:text-gray-300">
+                  <thead class="text-xs text-gray-500 dark:text-gray-400 uppercase bg-gray-100/50 dark:bg-gray-900/50">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 w-12"></th>
+                      <th scope="col" class="px-4 py-3">#</th>
+                      @for (column of tableColumns(); track column) { <th scope="col" class="px-6 py-3">{{ column }}</th> }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (idea of currentIdeas(); track idea.id; let i = $index) {
+                      <tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" [class.has-narration]="!!idea.narration">
+                        <td class="expand-cell px-6 py-4" [attr.data-label]="idea['Idea']">
+                          @if (idea.narrationLoading) {
+                            <div class="flex items-center justify-center">
+                              <svg class="animate-spin h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            </div>
+                          } @else {
+                            <button (click)="toggleExpand(idea.id)" class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-300" [class.rotate-90]="expandedIdeaId() === idea.id" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                          }
+                        </td>
+                        <td class="index-cell px-4 py-4 font-mono text-gray-400 dark:text-gray-500"><span>{{ i + 1 }}</span></td>
+                        @for (column of tableColumns(); track column) {
+                          <td class="px-6 py-4" [attr.data-label]="column">
+                            <div class="group flex justify-between items-start gap-2 md:block md:relative md:pr-12">
+                                <span class="flex-grow">{{ idea[column] }}</span>
+
+                                <div class="flex-shrink-0 flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-1 md:absolute md:top-1/2 md:-translate-y-1/2 md:right-0 opacity-60 md:opacity-0 group-hover:md:opacity-100 focus-within:md:opacity-100 transition-opacity">
+                                    <button (click)="copyToClipboard(idea[column], column, idea.id)" title="Copy {{column}}" class="p-1 bg-gray-200 dark:bg-gray-700 rounded-md">
+                                        @if (copiedColumn() === idea.id + '-' + column) { <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> } @else { <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> }
+                                    </button>
+                                    @if (expandedIdeaId() === idea.id && narrationPromptVisibility()[idea.id]) {
+                                        <button (click)="addToNarrationPrompt(idea, idea[column])" title="Add to narration prompt" class="p-1 bg-purple-600 rounded-full hover:bg-purple-500 transition-colors">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H5a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                          </td>
+                        }
+                      </tr>
+                      @if (expandedIdeaId() === idea.id) {
+                        <tr class="bg-gray-50/30 dark:bg-gray-900/30">
+                          <td [attr.colspan]="tableColumns().length + 2">
+                            <div class="p-4 sm:p-6 flex flex-col gap-6">
+                              <div class="flex flex-col">
+                                <button (click)="toggleNarrationPrompt(idea.id)" class="w-full flex justify-between items-center p-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors">
+                                  <span class="font-semibold text-gray-700 dark:text-gray-300">@if (idea.narration) { Edit Narration Prompt } @else { Narration Prompt }</span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-6 w-6 text-gray-500 dark:text-gray-400 transition-transform duration-300" [class.rotate-180]="narrationPromptVisibility()[idea.id]"><path fill="currentColor" d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
+                                </button>
+                                
+                                @if(narrationPromptVisibility()[idea.id]) {
+                                  <div class="flex flex-col gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 mt-4">
+                                    <div>
+                                      <div class="flex flex-wrap justify-between items-center gap-2 mb-2">
+                                          @if (isSavingTemplateForIdeaId() !== idea.id) {
+                                            <div class="flex items-center gap-2 ml-auto">
+                                              <button (click)="openTemplatesModal(idea)" class="px-2 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700/80 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">Manage Templates</button>
+                                              <button (click)="startSavingTemplate(idea.id)" class="px-2 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-500/20 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-500/40 transition-colors">Save as Template</button>
+                                            </div>
+                                          }
+                                      </div>
+                                      @if (isSavingTemplateForIdeaId() === idea.id) {
+                                        <div class="flex items-center gap-2 p-3 mb-3 bg-gray-100 dark:bg-gray-800 border border-indigo-500/30 rounded-lg">
+                                          <input type="text" [value]="newTemplateName()" (input)="newTemplateName.set($event.target.value)" placeholder="Enter template name..." class="flex-grow bg-white dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"/>
+                                          <button (click)="savePromptTemplate(idea, newTemplateName())" [disabled]="!newTemplateName().trim()" class="px-3 py-1 text-xs font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">Save</button>
+                                          <button (click)="cancelSavingTemplate()" class="px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700">Cancel</button>
+                                        </div>
+                                      }
+                                      <div class="p-3 mb-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-100/50 dark:bg-gray-800/50 space-y-3 text-sm">
+                                        <div>
+                                          <h5 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Available Variables</h5>
+                                          <div class="flex flex-wrap gap-2">
+                                              @for (column of tableColumns(); track column) { <button (click)="insertVariableIntoPrompt(idea, column)" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-xs font-mono">{{ '{{' + column + '}}' }}</button> }
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <textarea [id]="'narrationPrompt-' + idea.id" appAutoresize [triggerResize]="idea.narrationPrompt" [value]="idea.narrationPrompt" (input)="updateNarrationPrompt(idea.id, $event)" placeholder="Enter a prompt for the narration..." class="w-full p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-800 dark:text-gray-200 placeholder-gray-500 resize-none"></textarea>
+                                    </div>
+                                    <button (click)="generateNarration(idea)" [disabled]="idea.narrationLoading || !idea.narrationPrompt.trim()" class="inline-flex items-center justify-center px-6 py-2 font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                      @if (idea.narrationLoading) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating Script... } @else { @if (idea.narration) { Re-generate Video Script } @else { Generate Video Script } }
+                                    </button>
+                                  </div>
+                                }
+                              </div>
+                              @if (idea.narrationLoading) {
+                                <div class="flex items-center justify-center h-48 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse"><p class="text-gray-400 dark:text-gray-500">Generating script and image prompts...</p></div>
+                              } @else if (idea.narration) {
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" [id]="'narration-result-' + idea.id">
+                                  <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg flex flex-col">
+                                     <h4 class="text-lg font-bold text-indigo-500 dark:text-indigo-400 mb-3">Generated Narration</h4>
+                                     <div class="group relative flex-grow max-h-[400px] overflow-y-auto pr-2">
+                                        <div class="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{{idea.narration}}</div>
+                                        <button (click)="copyToClipboard(idea.narration!, 'narration', idea.id)" class="absolute top-1 right-3 p-1.5 bg-gray-200 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity" title="Copy narration">
+                                          @if (copiedNarration() === idea.id) { <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> } @else { <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> }
+                                        </button>
+                                     </div>
+                                     <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-4 text-xs text-gray-500 dark:text-gray-400 font-mono"><span>Words: {{ getWordCount(idea.narration) }}</span><span>Chars: {{ getCharacterCount(idea.narration) }}</span></div>
+                                  </div>
+                                  <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg flex flex-col">
+                                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                                      <h4 class="text-lg font-bold text-indigo-500 dark:text-indigo-400">Image Prompts</h4>
+                                      @if (idea.imagePrompts && idea.imagePrompts.length > 0) {
+                                        <div class="flex items-center gap-2">
+                                          <button (click)="downloadAllImages(idea)" [disabled]="isDownloadingAllImages() === idea.id || !hasGeneratedImages(idea)" class="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                            @if (isDownloadingAllImages() === idea.id) {
+                                              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                              Downloading...
+                                            } @else {
+                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                              Download All
+                                            }
+                                          </button>
+                                          <button (click)="generateAllImages(idea)" [disabled]="isGeneratingAllImages() === idea.id" class="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-500/20 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-500/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                            @if (isGeneratingAllImages() === idea.id) {
+                                              <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                              Generating...
+                                            } @else {
+                                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                              Generate All
+                                            }
+                                          </button>
+                                        </div>
+                                      }
+                                    </div>
+                                    <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                                      @if (idea.imagePrompts && idea.imagePrompts.length > 0) {
+                                        @for (prompt of idea.imagePrompts; track $index) {
+                                          <div class="bg-white/50 dark:bg-gray-900/50 p-3 rounded-lg text-sm group flex flex-col gap-3">
+                                            <div class="flex justify-between items-start gap-3">
+                                              @if (prompt.imageLoading) {
+                                                <div class="w-24 h-[135px] flex-shrink-0 bg-gray-300 dark:bg-gray-700 rounded-md animate-pulse"></div>
+                                              } @else if (prompt.imageUrl) {
+                                                <div class="relative w-24 flex-shrink-0 group/thumb">
+                                                  <button (click)="openLightbox(idea.id, $index)" class="w-full aspect-[9/16] bg-gray-300 dark:bg-gray-700 rounded-md overflow-hidden">
+                                                    <img [src]="prompt.imageUrl" alt="Generated image" class="w-full h-full object-cover"/>
+                                                  </button>
+                                                  <button (click)="downloadImage(prompt.imageUrl, 'image-' + prompt.timestamp + '.jpeg')" title="Download Image" class="absolute top-1 right-1 p-1.5 bg-black/50 rounded-full text-white opacity-0 group-hover/thumb:opacity-100 focus:opacity-100 transition-opacity">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                                  </button>
+                                                </div>
+                                              }
+                                              <div class="flex-grow">
+                                                <p class="text-gray-600 dark:text-gray-400"><strong class="text-indigo-600 dark:text-indigo-400 font-semibold">{{ prompt.timestamp }}:</strong></p>
+                                                <p class="text-gray-600 dark:text-gray-400">{{ prompt.prompt }}</p>
+                                              </div>
+                                              <button (click)="copyToClipboard(prompt.prompt, 'prompt-' + $index, idea.id)" class="flex-shrink-0 p-1 bg-gray-200 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity self-start">
+                                                @if (copiedColumn() === idea.id + '-prompt-' + $index) { <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> } @else { <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> }
+                                              </button>
+                                            </div>
+                                            
+                                            <div class="pt-2 border-t border-gray-200 dark:border-gray-700/50 flex flex-col items-start gap-2">
+                                              @if (prompt.videoPrompt) {
+                                                <div class="text-xs w-full">
+                                                  <p class="font-semibold text-purple-600 dark:text-purple-400 mb-1">Video Prompt:</p>
+                                                  <div class="group/video relative">
+                                                    <p class="text-gray-600 dark:text-gray-400">{{ prompt.videoPrompt }}</p>
+                                                    <button (click)="copyToClipboard(prompt.videoPrompt, 'vprompt-' + $index, idea.id)" class="absolute top-0 right-0 p-1 bg-gray-200 dark:bg-gray-700 rounded-md opacity-0 group-hover/video:opacity-100 focus:opacity-100 transition-opacity">
+                                                      @if (copiedColumn() === idea.id + '-vprompt-' + $index) { <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> } @else { <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> }
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              } @else if (prompt.videoPromptLoading) {
+                                                <div class="flex items-center gap-1.5 text-xs text-purple-500 dark:text-purple-300 font-semibold">
+                                                  <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                                  Generating...
+                                                </div>
+                                              } @else {
+                                                <button (click)="generateVideoPrompt(idea.id, $index)" class="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200 font-semibold transition-colors">
+                                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2-2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 001.553.832l3-2a1 1 0 000-1.664l-3-2z" /></svg>
+                                                  Generate Video Prompt
+                                                </button>
+                                              }
+
+                                              @if (!prompt.imageUrl && !prompt.imageLoading) {
+                                                <button (click)="generateSingleImage(idea.id, $index)" class="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-200 font-semibold transition-colors">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
+                                                    Generate Image
+                                                </button>
+                                              }
+
+                                              @if (prompt.imageError) {
+                                                <div class="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+                                                  <span>Generation Failed.</span>
+                                                  <button (click)="generateSingleImage(idea.id, $index)" class="underline font-semibold hover:text-red-500 dark:hover:text-red-300">Retry</button>
+                                                </div>
+                                              }
+
+                                            </div>
+                                          </div>
+                                        }
+                                      } @else {
+                                        <p class="text-gray-400 dark:text-gray-500 text-center py-4">No image prompts generated.</p>
+                                      }
+                                    </div>
+                                  </div>
+                                </div>
+                              }
+
+                              <!-- Notes Section -->
+                              <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
+                                <h4 class="text-lg font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+                                  Notes & References
+                                </h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-500 mb-3">Use this space to save video source links or other notes.</p>
+                                <textarea
+                                    [id]="'notes-' + idea.id"
+                                    appAutoresize
+                                    [triggerResize]="idea.notes"
+                                    [value]="idea.notes || ''"
+                                    (input)="updateNotes(idea.id, $event)"
+                                    placeholder="Paste links or type notes here..."
+                                    class="w-full min-h-[100px] p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-800 dark:text-gray-200 placeholder-gray-500 resize-none">
+                                </textarea>
+                              </div>
+
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else {
+              <!-- Compact View -->
+              <div class="excel-view-container shadow-lg">
+                <div class="p-4 bg-gray-100 dark:bg-gray-900/50 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
+                  <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Compact View</h3>
+                  <button (click)="copyCompactViewToClipboard()" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-700 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-500/20 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-500/40 transition-colors">
+                    @if (copiedCompactView()) {
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                      Copied!
+                    } @else {
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      Copy for Excel
+                    }
+                  </button>
+                </div>
+                <div class="excel-view">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>&nbsp;</th>
+                        @for (col of excelColumns(); track col) { <th>{{col}}</th> }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="row-header">1</td>
+                        @for (column of tableColumns(); track column) { <td>{{column}}</td> }
+                      </tr>
+                      @for (idea of currentIdeas(); track idea.id; let i = $index) {
+                        <tr>
+                          <td class="row-header">{{ i + 2 }}</td>
+                          @for (column of tableColumns(); track column) {
+                            <td [title]="idea[column]">{{ idea[column] }}</td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+            <div class="mt-8 text-center">
+              <button (click)="generateMoreIdeas()" [disabled]="loadingMoreIdeas()" class="relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105">
+                @if (loadingMoreIdeas()) {
+                  <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  Generating...
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  Generate More
+                }
+              </button>
+            </div>
+        } @else if (!loadingIdeas()) {
+          <div class="text-center py-16 px-6 bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7s0 0 0 0m16 0s0 0 0 0M12 11v6" /></svg>
+            <h3 class="mt-2 text-xl font-semibold text-gray-700 dark:text-gray-200">No ideas yet</h3>
+            <p class="mt-1 text-gray-500 dark:text-gray-400">Enter a topic above and click "Generate Ideas" to get started.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </main>
+
+  <!-- Scroll Up/Back Button -->
+  @if(isScrolled()) {
+    <button (click)="handleScrollButtonClick()" title="Scroll Up" class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-indigo-600/80 backdrop-blur-sm text-white shadow-lg hover:bg-indigo-500 transition-all duration-300 flex items-center justify-center z-50">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>
+    </button>
+  }
+
+  <!-- Templates Modal -->
+  @if (isTemplatesModalOpen() && activeIdeaForModal(); as idea) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeTemplatesModal()">
+      <div class="w-full max-w-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+        <header class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Manage Prompt Templates</h2>
+          <button (click)="closeTemplatesModal()" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white">&times;</button>
+        </header>
+        <div class="p-6 overflow-y-auto space-y-4">
+          @if (recentlyDeletedTemplate(); as deleted) {
+            <div class="p-3 bg-yellow-50 dark:bg-yellow-900/50 border border-yellow-200 dark:border-yellow-700 rounded-lg flex justify-between items-center text-sm transition-opacity duration-300">
+              <span class="text-yellow-700 dark:text-yellow-200">"{{ deleted.template.name }}" dihapus.</span>
+              <button (click)="undoDeletePromptTemplate()" class="font-semibold text-yellow-800 dark:text-yellow-300 hover:text-yellow-600 dark:hover:text-yellow-200 underline">Undo</button>
+            </div>
+          }
+          @for (template of savedPromptTemplates(); track $index) {
+            <div class="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+              @if (editingTemplateIndex() === $index) {
+                <div class="flex flex-col gap-3">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Template Name</label>
+                    <input type="text" [value]="editingTemplateName()" (input)="editingTemplateName.set($event.target.value)" class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"/>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Template Content</label>
+                    <textarea 
+                      appAutoresize 
+                      [triggerResize]="editingTemplateContent()"
+                      [value]="editingTemplateContent()" 
+                      (input)="editingTemplateContent.set($event.target.value)" 
+                      class="w-full min-h-48 max-h-[60vh] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 font-mono resize-none"></textarea>
+                  </div>
+                  <div class="flex items-center gap-2 justify-end">
+                    <button (click)="cancelEditingTemplate()" class="px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700">Cancel</button>
+                    <button (click)="saveEditingTemplate()" [disabled]="!editingTemplateName().trim() || !editingTemplateContent().trim()" class="px-3 py-1 text-xs font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50">Save</button>
+                  </div>
+                </div>
+              } @else {
+                <h3 class="font-semibold text-indigo-500 dark:text-indigo-400">{{template.name}}</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 line-clamp-3 whitespace-pre-wrap">{{template.template}}</p>
+                <div class="mt-4 flex items-center gap-2">
+                  <button (click)="applyPromptTemplate(idea, template.template)" class="px-3 py-1 text-xs font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Apply</button>
+                  <button (click)="copyTemplateToClipboard(template.template, $index)" class="px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700">
+                    @if (copiedTemplate() === 'template-' + $index) { Copied! } @else { Copy }
+                  </button>
+                  <button (click)="startEditingTemplate($index)" class="px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700">Edit</button>
+                  <div class="flex-grow"></div>
+                  @if (savedPromptTemplates().length > 1) {
+                    <button (click)="deletePromptTemplate($index)" class="px-3 py-1 text-xs font-semibold text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-900/50 rounded-md hover:bg-red-200 dark:hover:bg-red-900/80">Delete</button>
+                  }
+                </div>
+              }
+            </div>
+          }
+          @if(savedPromptTemplates().length === 0) {
+            <p class="text-center text-gray-500 py-8">No saved templates yet.</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Batch Generate Narration Modal -->
+  @if (isBatchGenerateModalOpen()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeBatchGenerateModal()">
+      <div class="w-full max-w-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+        <header class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center flex-shrink-0">
+          <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Select Ideas to Generate</h2>
+          <button (click)="closeBatchGenerateModal()" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-2xl leading-none">&times;</button>
+        </header>
+        <div class="p-6 overflow-y-auto flex-grow">
+          <div class="mb-4 p-3 bg-gray-100/50 dark:bg-gray-900/50 rounded-md border border-gray-200 dark:border-gray-700">
+            <label class="flex items-center space-x-3 cursor-pointer">
+              <input type="checkbox" [checked]="isAllIdeasSelectedForBatch()" [indeterminate]="isAnyIdeaSelectedForBatch() && !isAllIdeasSelectedForBatch()" (change)="toggleSelectAllIdeas()" class="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500">
+              <span class="font-semibold text-gray-700 dark:text-gray-200">Select All / Deselect All</span>
+            </label>
+          </div>
+          <div class="space-y-2">
+            @for (idea of currentIdeas(); track idea.id) {
+              <label class="flex items-center p-3 space-x-4 bg-gray-100/50 dark:bg-gray-900/50 rounded-md hover:bg-gray-200/50 dark:hover:bg-gray-700/50 transition-colors border border-gray-200 dark:border-gray-700 cursor-pointer text-gray-700 dark:text-gray-300">
+                <input type="checkbox" [checked]="selectedIdeasForBatch().has(idea.id)" (change)="toggleIdeaSelection(idea.id)" class="h-5 w-5 rounded bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500 flex-shrink-0">
+                <div class="flex-1 flex items-center gap-2 min-w-0">
+                    <span class="truncate" [class.text-sky-600]="!!idea.narration" [class.dark:text-sky-400]="!!idea.narration" [title]="idea['Idea']">{{idea['Idea']}}</span>
+                    @if(idea.narration) {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sky-600 dark:text-sky-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" title="Narration already generated">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                    }
+                </div>
+              </label>
+            }
+          </div>
+        </div>
+        <footer class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end items-center gap-3 flex-shrink-0 bg-white/50 dark:bg-gray-800/50 rounded-b-2xl">
+          <button (click)="closeBatchGenerateModal()" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">Cancel</button>
+          <button (click)="generateSelectedNarrations()" [disabled]="!isAnyIdeaSelectedForBatch()" class="px-4 py-2 text-sm font-bold text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Generate {{ selectedIdeasForBatch().size }} Narration(s)
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- Import Confirmation Modal -->
+  @if (isImportConfirmModalOpen()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="cancelImport()">
+      <div class="w-full max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl" (click)="$event.stopPropagation()">
+        <div class="p-6 text-center">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/50">
+            <svg class="h-6 w-6 text-yellow-500 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+          </div>
+          <h3 class="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100">Merge Data</h3>
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">This will merge data from the imported file with your current history and templates. If a history item with the same topic exists, the newest version is kept. If a template with the same name exists, your current one is kept. This action cannot be undone.</p>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-center gap-3">
+          <button (click)="confirmImport()" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700">Merge & Import</button>
+          <button (click)="cancelImport()" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-md bg-gray-200 dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Reset Confirmation Modal -->
+  @if (isResetConfirmModalOpen()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeResetConfirmModal()">
+      <div class="w-full max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl" (click)="$event.stopPropagation()">
+        <div class="p-6 text-center">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
+            <svg class="h-6 w-6 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+          </div>
+          <h3 class="mt-4 text-lg font-semibold text-gray-800 dark:text-gray-100">Bersihkan Tampilan Tabel?</h3>
+          <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Aksi ini hanya akan membersihkan tampilan tabel untuk sementara. Data Anda tidak akan hilang dan akan muncul kembali jika sesi riwayat ini dipilih lagi.</p>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-center gap-3">
+          <button (click)="confirmResetData()" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700">Ya, Bersihkan</button>
+          <button (click)="closeResetConfirmModal()" type="button" class="w-full sm:w-auto inline-flex justify-center rounded-md bg-gray-200 dark:bg-gray-700 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 shadow-sm hover:bg-gray-300 dark:hover:bg-gray-600">Batal</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Image Lightbox Modal -->
+  @if (lightboxState(); as state) {
+    @if(lightboxImageUrl(); as url) {
+      <div class="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4" (click)="closeLightbox()">
+        
+        <!-- Close Button -->
+        <button (click)="closeLightbox()" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/50 text-white flex items-center justify-center text-2xl font-bold hover:bg-black/80 transition-colors backdrop-blur-sm">&times;</button>
+
+        <!-- Prev Button -->
+        @if (hasPrevImage()) {
+          <button (click)="$event.stopPropagation(); prevImage()" title="Previous Image" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors backdrop-blur-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+          </button>
+        }
+
+        <!-- Main container for image and prompts -->
+        <div class="relative w-full h-full max-w-screen-xl mx-auto flex flex-col lg:flex-row items-center justify-center gap-6" (click)="$event.stopPropagation()">
+          
+          <!-- Image display area -->
+          <div class="relative flex-1 w-full h-full flex items-center justify-center">
+            <img [src]="url" alt="Generated image full view" class="max-w-full max-h-full object-contain drop-shadow-2xl"/>
+          </div>
+          
+          <!-- Prompt Display Sidebar -->
+          @if (lightboxImagePromptObject(); as prompt) {
+            <div class="w-full lg:w-96 lg:max-w-sm flex-shrink-0 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm p-4 rounded-lg max-h-[40%] lg:max-h-[85vh] overflow-y-auto text-sm flex flex-col gap-4">
+              
+              <button (click)="downloadImage(url, 'downloaded-image.jpeg')" title="Download Image" class="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                Download Image
+              </button>
+              
+              <div class="group relative">
+                  <h4 class="font-bold text-indigo-600 dark:text-indigo-300 uppercase tracking-wider text-xs mb-1">Image Prompt</h4>
+                  <p class="text-gray-800 dark:text-gray-200">{{ prompt.prompt }}</p>
+                  <button (click)="copyLightboxPrompt(prompt.prompt, 'image')" class="absolute top-0 right-0 p-1 bg-gray-200 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity">
+                      @if (copiedLightboxPrompt() === 'image') { 
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> 
+                      } @else { 
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> 
+                      }
+                  </button>
+              </div>
+
+              @if (prompt.videoPrompt) {
+                  <div class="group relative pt-4 border-t border-gray-300/50 dark:border-gray-600/50">
+                      <h4 class="font-bold text-purple-600 dark:text-purple-300 uppercase tracking-wider text-xs mb-1">Video Prompt</h4>
+                      <p class="text-gray-800 dark:text-gray-200">{{ prompt.videoPrompt }}</p>
+                      <button (click)="copyLightboxPrompt(prompt.videoPrompt, 'video')" class="absolute top-4 right-0 p-1 bg-gray-200 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity">
+                         @if (copiedLightboxPrompt() === 'video') { 
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg> 
+                         } @else { 
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> 
+                         }
+                      </button>
+                  </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Next Button -->
+        @if (hasNextImage()) {
+          <button (click)="$event.stopPropagation(); nextImage()" title="Next Image" class="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors backdrop-blur-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+          </button>
+        }
+      </div>
+    }
+  }
+</div>

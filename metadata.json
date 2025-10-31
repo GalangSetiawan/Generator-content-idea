@@ -1,0 +1,5 @@
+{
+  "name": "V2 Content narration engine",
+  "description": "An application to generate content ideas, expand them into narrations, and create visual prompts using AI.",
+  "requestFramePermissions": []
+}
