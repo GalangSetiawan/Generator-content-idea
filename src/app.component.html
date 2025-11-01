@@ -8,6 +8,8 @@
           <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
             Content Idea Generator
           </h1>
+          <span>Active Text gen Model: <strong class="font-semibold text-gray-700 dark:text-gray-300">{{ modelSettingsService.textModel() }}</strong></span> <br>
+          <span>Active Image gen Model: <strong class="font-semibold text-gray-700 dark:text-gray-300">{{ modelSettingsService.imageModel() }}</strong></span>
         </div>
         <div class="flex items-center gap-2 self-start sm:self-center flex-shrink-0">
           <!-- API Key Button -->
@@ -30,7 +32,7 @@
             }
           </button>
           <!-- About Button -->
-          <button (click)="openAboutModal()" title="About" class="p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          <button (click)="openAboutModal()" title="About & Settings" class="p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
@@ -718,23 +720,61 @@
     <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeAboutModal()">
       <div class="w-full max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl" (click)="$event.stopPropagation()">
         <header class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-          <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">About This Application</h2>
+          <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">About & Settings</h2>
           <button (click)="closeAboutModal()" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-2xl leading-none">&times;</button>
         </header>
-        <div class="p-6 space-y-4">
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            This application was created to demonstrate the power of generative AI for content creation workflows.
-          </p>
+        <div class="p-6 space-y-6">
           <div class="text-sm">
             <p class="font-semibold text-gray-700 dark:text-gray-300">Created by:</p>
             <p class="text-gray-600 dark:text-gray-400">Google AI Studio Team</p>
           </div>
-          <div class="text-sm">
-            <p class="font-semibold text-gray-700 dark:text-gray-300">AI Models Used:</p>
-            <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
-              <li><strong>Text Generation:</strong> Google Gemini 2.5 Flash (<code>gemini-2.5-flash</code>)</li>
-              <li><strong>Image Generation:</strong> Google Imagen 3.0 (<code>imagen-3.0-generate-002</code>)</li>
-            </ul>
+          
+          <!-- Model Settings Section -->
+          <div>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">AI Model Selection</h3>
+            <div class="space-y-4">
+              <!-- Text Model Dropdown -->
+              <div>
+                <div class="flex justify-between items-center">
+                  <label for="textModelSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Text Generation</label>
+                  @if (showSavedConfirmation() === 'text') {
+                    <span class="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1 transition-opacity duration-300" role="status">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                      Saved!
+                    </span>
+                  }
+                </div>
+                <select id="textModelSelect" 
+                        [value]="modelSettingsService.textModel()" 
+                        (change)="onTextModelChange($event)"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-gray-100/50 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200">
+                  @for (model of modelSettingsService.textModels; track model.id) {
+                    <option [value]="model.id">{{ model.name }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- Image Model Dropdown -->
+              <div>
+                <div class="flex justify-between items-center">
+                  <label for="imageModelSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image Generation</label>
+                  @if (showSavedConfirmation() === 'image') {
+                    <span class="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1 transition-opacity duration-300" role="status">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>
+                      Saved!
+                    </span>
+                  }
+                </div>
+                <select id="imageModelSelect" 
+                        [value]="modelSettingsService.imageModel()"
+                        (change)="onImageModelChange($event)"
+                        class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md bg-gray-100/50 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200">
+                  @for (model of modelSettingsService.imageModels; track model.id) {
+                    <option [value]="model.id" [disabled]="model.disabled">{{ model.name }}</option>
+                  }
+                </select>
+              </div>
+            </div>
           </div>
         </div>
         <footer class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-end">

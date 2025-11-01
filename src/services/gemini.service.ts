@@ -2,12 +2,14 @@ import { Injectable, signal, effect, inject } from '@angular/core';
 import { GoogleGenAI, Type } from '@google/genai';
 import { ContentIdea } from '../models/content-idea.model';
 import { ApiKeyService } from './api-key.service';
+import { ModelSettingsService } from './model-settings.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GeminiService {
   private apiKeyService = inject(ApiKeyService);
+  private modelSettingsService = inject(ModelSettingsService);
   private ai: GoogleGenAI | null = null;
   public error = signal<string | null>(null);
 
@@ -85,7 +87,7 @@ export class GeminiService {
       const prompt = `Based on the topic "${topic}", generate ${count} unique and engaging content ideas. For each idea, provide a value for the following fields: ${customColumns.join(', ')}. Respond with a valid JSON array of objects. Do not include any markdown formatting or introductory text.`;
       
       const response = await this.ai!.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: this.modelSettingsService.textModel(),
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -156,7 +158,7 @@ Balas dengan objek JSON yang valid. Jangan sertakan markdown. Objek JSON harus b
       };
 
       const response = await this.ai!.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: this.modelSettingsService.textModel(),
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -186,7 +188,7 @@ Image Prompt: "${originalPrompt}"
 Video Prompt:`;
 
       const response = await this.ai!.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: this.modelSettingsService.textModel(),
         contents: prompt,
       });
 
@@ -203,7 +205,7 @@ Video Prompt:`;
     this.error.set(null);
     try {
       const response = await this.ai!.models.generateImages({
-        model: 'imagen-3.0-generate-002',
+        model: this.modelSettingsService.imageModel(),
         prompt: prompt,
         config: {
           numberOfImages: 1,

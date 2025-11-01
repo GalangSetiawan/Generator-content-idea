@@ -5,6 +5,7 @@ import { ChipInputComponent } from './components/chip-input/chip-input.component
 import { AutoresizeTextareaDirective } from './directives/autoresize-textarea.directive';
 import { ContentIdea, ImagePrompt, HistoryItem } from './models/content-idea.model';
 import { ApiKeyService } from './services/api-key.service';
+import { ModelSettingsService } from './services/model-settings.service';
 
 interface PromptTemplate {
   name: string;
@@ -40,6 +41,7 @@ function getInitialTheme(): 'light' | 'dark' {
 export class AppComponent {
   apiKeyService = inject(ApiKeyService);
   geminiService = inject(GeminiService);
+  modelSettingsService = inject(ModelSettingsService);
 
   // --- UI State ---
   topic = signal<string>('Buat pembahasan tentang fakta menarik, misterius, atau sedikit ngeri seputar dunia hewan — bisa tentang hewan spesifik, perilaku, atau konsep biologis seperti predator, simbiosis, evolusi, dll.');
@@ -228,6 +230,7 @@ buat menjadi beberapa paragraf sesuai dengan struktur penulisan [WAJIB]`;
   hasApiKey = computed(() => !!this.apiKeyService.apiKey());
   apiKeyValidation = signal<{ status: 'idle' | 'validating' | 'invalid' | 'valid', message: string }>({ status: 'idle', message: '' });
   isAboutModalOpen = signal(false);
+  showSavedConfirmation = signal<'text' | 'image' | null>(null);
 
   // --- UI/UX Improvements State ---
   isScrolled = signal(false);
@@ -399,10 +402,34 @@ buat menjadi beberapa paragraf sesuai dengan struktur penulisan [WAJIB]`;
   // --- About Modal ---
   openAboutModal(): void {
     this.isAboutModalOpen.set(true);
+    this.showSavedConfirmation.set(null);
   }
 
   closeAboutModal(): void {
     this.isAboutModalOpen.set(false);
+  }
+
+  // --- Model Settings ---
+  onTextModelChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.modelSettingsService.setTextModel(selectElement.value);
+    this.showSavedConfirmation.set('text');
+    setTimeout(() => {
+      if (this.showSavedConfirmation() === 'text') {
+        this.showSavedConfirmation.set(null);
+      }
+    }, 2000);
+  }
+
+  onImageModelChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.modelSettingsService.setImageModel(selectElement.value);
+    this.showSavedConfirmation.set('image');
+    setTimeout(() => {
+      if (this.showSavedConfirmation() === 'image') {
+        this.showSavedConfirmation.set(null);
+      }
+    }, 2000);
   }
 
   // --- State Persistence ---

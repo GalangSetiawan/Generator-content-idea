@@ -13,7 +13,7 @@
           "builder": "@angular/build:application",
           "options": {
             "outputPath": {
-              "base": "./docs",
+              "base": "./dist",
               "browser": "."
             },
             "browser": "index.tsx",
@@ -48,8 +48,5 @@
         }
       }
     }
-  },
-  "cli": {
-    "analytics": "156f2904-c38f-4180-9b84-6335a2028c80"
   }
 }
