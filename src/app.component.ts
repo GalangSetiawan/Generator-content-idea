@@ -4,6 +4,7 @@ import { GeminiService } from './services/gemini.service';
 import { ChipInputComponent } from './components/chip-input/chip-input.component';
 import { AutoresizeTextareaDirective } from './directives/autoresize-textarea.directive';
 import { ContentIdea, ImagePrompt, HistoryItem } from './models/content-idea.model';
+import { ApiKeyService } from './services/api-key.service';
 
 interface PromptTemplate {
   name: string;
@@ -37,6 +38,7 @@ function getInitialTheme(): 'light' | 'dark' {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent {
+  apiKeyService = inject(ApiKeyService);
   geminiService = inject(GeminiService);
 
   // --- UI State ---
@@ -220,6 +222,13 @@ buat menjadi beberapa paragraf sesuai dengan struktur penulisan [WAJIB]`;
   isBatchGenerateModalOpen = signal(false);
   selectedIdeasForBatch = signal<Set<string>>(new Set());
 
+  // --- API Key Management State ---
+  isApiKeyModalOpen = signal(false);
+  apiKeyInput = signal('');
+  hasApiKey = computed(() => !!this.apiKeyService.apiKey());
+  apiKeyValidation = signal<{ status: 'idle' | 'validating' | 'invalid' | 'valid', message: string }>({ status: 'idle', message: '' });
+  isAboutModalOpen = signal(false);
+
   // --- UI/UX Improvements State ---
   isScrolled = signal(false);
   narrationPromptVisibility = signal<{[key: string]: boolean}>({});
@@ -316,6 +325,15 @@ buat menjadi beberapa paragraf sesuai dengan struktur penulisan [WAJIB]`;
             this.customColumns.set(activeItem.customColumns);
         }
     });
+
+    // Effect to manage API key modal
+    effect(() => {
+      if (!this.hasApiKey()) {
+          this.isApiKeyModalOpen.set(true);
+      } else {
+          this.isApiKeyModalOpen.set(false);
+      }
+    });
   }
   
   @HostListener('document:click', ['$event'])
@@ -333,6 +351,58 @@ buat menjadi beberapa paragraf sesuai dengan struktur penulisan [WAJIB]`;
             this.scrollToTopClickCount.set(0);
         }
     }
+  }
+
+  // --- API Key Management ---
+  async saveApiKey(): Promise<void> {
+    const keyToValidate = this.apiKeyInput().trim();
+    if (!keyToValidate) {
+      this.apiKeyValidation.set({ status: 'invalid', message: 'API Key cannot be empty.' });
+      return;
+    }
+
+    this.apiKeyValidation.set({ status: 'validating', message: '' });
+
+    const result = await this.geminiService.validateApiKey(keyToValidate);
+
+    if (result.isValid) {
+      this.apiKeyService.setApiKey(keyToValidate);
+      this.apiKeyInput.set(''); // Clear input after saving
+      this.apiKeyValidation.set({ status: 'valid', message: 'API Key validated and saved successfully!' });
+      // Close modal after a short delay to show success message
+      setTimeout(() => {
+        this.closeApiKeyModal();
+      }, 1500);
+    } else {
+      let errorMessage = result.error || 'An unknown validation error occurred.';
+      if (this.hasApiKey()) {
+        errorMessage += " The new key was NOT saved. The application is still using your previously saved valid key.";
+      }
+      this.apiKeyValidation.set({ status: 'invalid', message: errorMessage });
+    }
+  }
+
+  clearApiKey(): void {
+    this.apiKeyService.clearApiKey();
+  }
+  
+  openApiKeyModal(): void {
+    this.apiKeyInput.set(this.apiKeyService.apiKey() ?? '');
+    this.apiKeyValidation.set({ status: 'idle', message: '' }); // Reset on open
+    this.isApiKeyModalOpen.set(true);
+  }
+
+  closeApiKeyModal(): void {
+    this.isApiKeyModalOpen.set(false);
+  }
+
+  // --- About Modal ---
+  openAboutModal(): void {
+    this.isAboutModalOpen.set(true);
+  }
+
+  closeAboutModal(): void {
+    this.isAboutModalOpen.set(false);
   }
 
   // --- State Persistence ---

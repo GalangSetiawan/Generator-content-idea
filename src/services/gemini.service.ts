@@ -1,34 +1,68 @@
-
-
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, effect, inject } from '@angular/core';
 import { GoogleGenAI, Type } from '@google/genai';
 import { ContentIdea } from '../models/content-idea.model';
+import { ApiKeyService } from './api-key.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private apiKeyService = inject(ApiKeyService);
+  private ai: GoogleGenAI | null = null;
   public error = signal<string | null>(null);
-  // FIX: Added a private property to track API key availability.
-  private readonly hasApiKey: boolean;
 
   constructor() {
-    // This is a placeholder for a secure API key handling mechanism.
-    // In a real app, process.env.API_KEY should be handled securely.
-    // For this applet environment, we'll use a placeholder.
-    const apiKey = (window as any).process?.env?.API_KEY ?? '';
-    this.hasApiKey = !!apiKey;
-    if (!this.hasApiKey) {
-      console.error("API Key not found. Please set the API_KEY environment variable.");
-      this.error.set("API Key not found. Please configure it in your environment to use this app.");
+    effect(() => {
+      const apiKey = this.apiKeyService.apiKey();
+      if (apiKey) {
+        try {
+          this.ai = new GoogleGenAI({ apiKey });
+          this.error.set(null); // Clear previous errors when a new key is set
+        } catch (e: any) {
+          console.error("Failed to initialize GoogleGenAI:", e);
+          this.ai = null;
+          this.error.set(`Failed to initialize Google AI: ${e.message}. Please check your API key.`);
+        }
+      } else {
+        this.ai = null;
+        this.error.set("API Key is not set. Please provide your Google AI API key to use the app.");
+      }
+    });
+  }
+
+  private isReady(): boolean {
+    if (!this.ai) {
+      this.error.set("API Key is not set. Please provide your Google AI API key to use the app.");
+      return false;
     }
-    this.ai = new GoogleGenAI({ apiKey });
+    return true;
+  }
+
+  async validateApiKey(apiKey: string): Promise<{isValid: boolean; error?: string}> {
+    if (!apiKey || !apiKey.trim()) {
+        return { isValid: false, error: 'API Key cannot be empty.' };
+    }
+    try {
+        const tempAi = new GoogleGenAI({ apiKey });
+        // Use a lightweight, non-quota-consuming call like countTokens to validate
+        await tempAi.models.countTokens({
+            model: 'gemini-2.5-flash',
+            contents: { parts: [{ text: 'validate' }] },
+        });
+        return { isValid: true };
+    } catch (e: any) {
+        console.error("API Key validation failed:", e);
+        let errorMessage = 'Invalid API Key or network issue. Please check the key and your connection.';
+        // The Gemini API error for an invalid key usually contains this string.
+        if (e.message && (e.message.includes('API key not valid') || e.message.includes('API_KEY_INVALID'))) {
+            errorMessage = 'The provided API key is not valid. Please check it and try again.';
+        }
+        return { isValid: false, error: errorMessage };
+    }
   }
 
   async generateContentIdeas(topic: string, customColumns: string[], count: number): Promise<any[]> {
-    // FIX: Check for API key availability using the private `hasApiKey` property instead of accessing a private member of `GoogleGenAI`.
-    if (!this.hasApiKey) return [];
+    if (!this.isReady()) return [];
     this.error.set(null);
     try {
       const properties: { [key: string]: any } = {};
@@ -50,8 +84,8 @@ export class GeminiService {
 
       const prompt = `Based on the topic "${topic}", generate ${count} unique and engaging content ideas. For each idea, provide a value for the following fields: ${customColumns.join(', ')}. Respond with a valid JSON array of objects. Do not include any markdown formatting or introductory text.`;
       
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-pro",
+      const response = await this.ai!.models.generateContent({
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -64,18 +98,15 @@ export class GeminiService {
       return Array.isArray(result) ? result : [];
     } catch (e) {
       console.error('Error generating content ideas:', e);
-      this.error.set('Failed to generate content ideas. The model may have returned an unexpected format. Please try again.');
+      this.error.set('Failed to generate content ideas. The model may have returned an unexpected format or your API key may be invalid. Please try again.');
       return [];
     }
   }
 
   async generateNarrationAndPrompts(idea: any, userPrompt: string): Promise<Partial<ContentIdea> | null> {
-    // FIX: Check for API key availability using the private `hasApiKey` property instead of accessing a private member of `GoogleGenAI`.
-    if (!this.hasApiKey) return null;
+    if (!this.isReady()) return null;
     this.error.set(null);
     try {
-      // The userPrompt is now pre-processed and contains the full narration request.
-      // We just need to append instructions for image prompts and JSON format.
       const prompt = `${userPrompt}
 
 Setelah membuat narasi di atas, buatlah serangkaian prompt gambar yang sangat deskriptif secara visual dalam Bahasa Indonesia. Setiap prompt harus sesuai untuk segmen video berdurasi 5 detik dan cocok dengan narasi yang dibuat. Jumlah prompt harus sesuai dengan panjang narasi (misalnya, narasi 30 detik harus menghasilkan 6 prompt, narasi 60 detik menghasilkan 12 prompt).
@@ -124,8 +155,8 @@ Balas dengan objek JSON yang valid. Jangan sertakan markdown. Objek JSON harus b
         required: ['narration', 'imagePrompts']
       };
 
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-pro",
+      const response = await this.ai!.models.generateContent({
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -145,7 +176,7 @@ Balas dengan objek JSON yang valid. Jangan sertakan markdown. Objek JSON harus b
   }
 
   async generateVideoPromptFromImagePrompt(originalPrompt: string): Promise<string | null> {
-    if (!this.hasApiKey) return null;
+    if (!this.isReady()) return null;
     this.error.set(null);
     try {
       const prompt = `Based on the following descriptive AI image prompt, create a concise but dynamic prompt for an AI video generator to turn the static image into a short, 5-second video clip. The video prompt should focus on subtle movements, camera motion (like a slow zoom in or a gentle pan), and atmospheric effects (like drifting smoke or shimmering light). Do not describe the image again, only describe the motion.
@@ -154,8 +185,8 @@ Image Prompt: "${originalPrompt}"
 
 Video Prompt:`;
 
-      const response = await this.ai.models.generateContent({
-        model: "gemini-2.5-pro",
+      const response = await this.ai!.models.generateContent({
+        model: "gemini-2.5-flash",
         contents: prompt,
       });
 
@@ -168,11 +199,11 @@ Video Prompt:`;
   }
 
   async generateImage(prompt: string): Promise<string | null> {
-    if (!this.hasApiKey) return null;
+    if (!this.isReady()) return null;
     this.error.set(null);
     try {
-      const response = await this.ai.models.generateImages({
-        model: 'imagen-4.0-generate-001',
+      const response = await this.ai!.models.generateImages({
+        model: 'imagen-3.0-generate-002',
         prompt: prompt,
         config: {
           numberOfImages: 1,
@@ -187,7 +218,7 @@ Video Prompt:`;
       return null;
     } catch (e) {
       console.error('Error generating image:', e);
-      this.error.set('Failed to generate the image. The model may have returned an error. Please try again.');
+      this.error.set('Failed to generate the image. The model may have returned an error or your API key may be invalid. Please try again.');
       return null;
     }
   }

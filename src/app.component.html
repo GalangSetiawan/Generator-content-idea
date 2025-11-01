@@ -8,9 +8,19 @@
           <h1 class="text-2xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
             Content Idea Generator
           </h1>
-          <p class="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400">Fuel your creativity with AI-powered content concepts and scripts.</p>
         </div>
         <div class="flex items-center gap-2 self-start sm:self-center flex-shrink-0">
+          <!-- API Key Button -->
+          <button (click)="openApiKeyModal()" title="Manage API Key" class="flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-lg transition-colors"
+            [class.text-green-700]="hasApiKey()" [class.dark:text-green-300]="hasApiKey()"
+            [class.bg-green-100]="hasApiKey()" [class.dark:bg-green-900/50]="hasApiKey()"
+            [class.hover:bg-green-200]="hasApiKey()" [class.dark:hover:bg-green-900/80]="hasApiKey()"
+            [class.text-red-700]="!hasApiKey()" [class.dark:text-red-300]="!hasApiKey()"
+            [class.bg-red-100]="!hasApiKey()" [class.dark:bg-red-900/50]="!hasApiKey()"
+            [class.hover:bg-red-200]="!hasApiKey()" [class.dark:hover:bg-red-900/80]="!hasApiKey()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" /></svg>
+            <span class="hidden sm:inline">API Key</span>
+          </button>
           <!-- Theme Toggle -->
           <button (click)="toggleTheme()" [title]="'Switch to ' + (theme() === 'dark' ? 'light' : 'dark') + ' mode'" class="p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
             @if(theme() === 'dark') {
@@ -18,6 +28,12 @@
             } @else {
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
             }
+          </button>
+          <!-- About Button -->
+          <button (click)="openAboutModal()" title="About" class="p-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
           </button>
           <!-- Import/Export Buttons -->
           <input #importFileInput type="file" class="hidden" accept=".json" (change)="handleFileImport($event)">
@@ -36,7 +52,7 @@
         <div class="grid grid-cols-1 gap-6">
           <div class="flex flex-col gap-2">
             <label for="topic" class="font-semibold text-gray-700 dark:text-gray-300">Content Topic</label>
-            <textarea id="topic" appAutoresize [value]="topic()" (input)="topic.set($event.target.value)" placeholder="e.g., Viral marketing for a tech startup" class="w-full min-h-[80px] p-3 bg-gray-100/50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none overflow-hidden"></textarea>
+            <textarea id="topic" appAutoresize [value]="topic()" (input)="topic.set($event.target.value)" placeholder="e.g., Viral marketing for a tech startup" class="w-full min-h-[40px] p-3 bg-gray-100/50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 resize-none overflow-hidden"></textarea>
           </div>
           <div class="flex flex-col gap-2">
             <label for="columns" class="font-semibold text-gray-700 dark:text-gray-300">Custom Columns</label>
@@ -46,7 +62,7 @@
         </div>
         <div class="mt-6 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-6">
           <div class="flex flex-col sm:flex-row w-full md:w-auto items-stretch sm:items-end gap-3">
-            <button (click)="generateIdeas()" [disabled]="loadingIdeas() || !topic().trim()" class="relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 h-full flex-grow sm:flex-grow-0">
+            <button (click)="generateIdeas()" [disabled]="loadingIdeas() || !topic().trim() || !hasApiKey()" class="relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 h-full flex-grow sm:flex-grow-0">
               @if (loadingIdeas()) {
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 Generating...
@@ -127,7 +143,7 @@
           </div>
         } @else if (currentIdeas().length > 0) {
             <div class="mb-4 flex justify-end">
-              <button (click)="openBatchGenerateModal()" [disabled]="currentIdeas().length === 0" class="inline-flex items-center justify-center px-5 py-2 font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              <button (click)="openBatchGenerateModal()" [disabled]="currentIdeas().length === 0 || !hasApiKey()" class="inline-flex items-center justify-center px-5 py-2 font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" /></svg>
                 Generate Narrations
               </button>
@@ -218,7 +234,7 @@
                                       </div>
                                       <textarea [id]="'narrationPrompt-' + idea.id" appAutoresize [triggerResize]="idea.narrationPrompt" [value]="idea.narrationPrompt" (input)="updateNarrationPrompt(idea.id, $event)" placeholder="Enter a prompt for the narration..." class="w-full p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-800 dark:text-gray-200 placeholder-gray-500 resize-none"></textarea>
                                     </div>
-                                    <button (click)="generateNarration(idea)" [disabled]="idea.narrationLoading || !idea.narrationPrompt.trim()" class="inline-flex items-center justify-center px-6 py-2 font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <button (click)="generateNarration(idea)" [disabled]="idea.narrationLoading || !idea.narrationPrompt.trim() || !hasApiKey()" class="inline-flex items-center justify-center px-6 py-2 font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                                       @if (idea.narrationLoading) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating Script... } @else { @if (idea.narration) { Re-generate Video Script } @else { Generate Video Script } }
                                     </button>
                                   </div>
@@ -252,7 +268,7 @@
                                               Download All
                                             }
                                           </button>
-                                          <button (click)="generateAllImages(idea)" [disabled]="isGeneratingAllImages() === idea.id" class="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-500/20 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-500/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                          <button (click)="generateAllImages(idea)" [disabled]="isGeneratingAllImages() === idea.id || !hasApiKey()" class="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-500/20 rounded-md hover:bg-indigo-200 dark:hover:bg-indigo-500/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                             @if (isGeneratingAllImages() === idea.id) {
                                               <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                                               Generating...
@@ -307,14 +323,14 @@
                                                   Generating...
                                                 </div>
                                               } @else {
-                                                <button (click)="generateVideoPrompt(idea.id, $index)" class="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200 font-semibold transition-colors">
+                                                <button (click)="generateVideoPrompt(idea.id, $index)" [disabled]="!hasApiKey()" class="flex items-center gap-1.5 text-xs text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2-2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 001.553.832l3-2a1 1 0 000-1.664l-3-2z" /></svg>
                                                   Generate Video Prompt
                                                 </button>
                                               }
 
                                               @if (!prompt.imageUrl && !prompt.imageLoading) {
-                                                <button (click)="generateSingleImage(idea.id, $index)" class="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-200 font-semibold transition-colors">
+                                                <button (click)="generateSingleImage(idea.id, $index)" [disabled]="!hasApiKey()" class="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-300 hover:text-indigo-500 dark:hover:text-indigo-200 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" /></svg>
                                                     Generate Image
                                                 </button>
@@ -323,7 +339,7 @@
                                               @if (prompt.imageError) {
                                                 <div class="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
                                                   <span>Generation Failed.</span>
-                                                  <button (click)="generateSingleImage(idea.id, $index)" class="underline font-semibold hover:text-red-500 dark:hover:text-red-300">Retry</button>
+                                                  <button (click)="generateSingleImage(idea.id, $index)" [disabled]="!hasApiKey()" class="underline font-semibold hover:text-red-500 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed">Retry</button>
                                                 </div>
                                               }
 
@@ -406,7 +422,7 @@
               </div>
             }
             <div class="mt-8 text-center">
-              <button (click)="generateMoreIdeas()" [disabled]="loadingMoreIdeas()" class="relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105">
+              <button (click)="generateMoreIdeas()" [disabled]="loadingMoreIdeas() || !hasApiKey()" class="relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg shadow-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105">
                 @if (loadingMoreIdeas()) {
                   <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                   Generating...
@@ -420,7 +436,7 @@
           <div class="text-center py-16 px-6 bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl">
             <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7s0 0 0 0m16 0s0 0 0 0M12 11v6" /></svg>
             <h3 class="mt-2 text-xl font-semibold text-gray-700 dark:text-gray-200">No ideas yet</h3>
-            <p class="mt-1 text-gray-500 dark:text-gray-400">Enter a topic above and click "Generate Ideas" to get started.</p>
+            <p class="mt-1 text-gray-500 dark:text-gray-400">@if(hasApiKey()){ Enter a topic above and click "Generate Ideas" to get started. } @else { Please set your API Key to begin. }</p>
           </div>
         }
       </div>
@@ -529,7 +545,7 @@
         </div>
         <footer class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end items-center gap-3 flex-shrink-0 bg-white/50 dark:bg-gray-800/50 rounded-b-2xl">
           <button (click)="closeBatchGenerateModal()" class="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-600 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-          <button (click)="generateSelectedNarrations()" [disabled]="!isAnyIdeaSelectedForBatch()" class="px-4 py-2 text-sm font-bold text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <button (click)="generateSelectedNarrations()" [disabled]="!isAnyIdeaSelectedForBatch() || !hasApiKey()" class="px-4 py-2 text-sm font-bold text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             Generate {{ selectedIdeasForBatch().size }} Narration(s)
           </button>
         </footer>
@@ -586,7 +602,7 @@
         <!-- Prev Button -->
         @if (hasPrevImage()) {
           <button (click)="$event.stopPropagation(); prevImage()" title="Previous Image" class="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 bg-white/10 rounded-full hover:bg-white/20 transition-colors backdrop-blur-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-8 sm:w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7 7" /></svg>
           </button>
         }
 
@@ -644,5 +660,87 @@
         }
       </div>
     }
+  }
+
+  <!-- API Key Modal -->
+  @if (isApiKeyModalOpen()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" [class.cursor-not-allowed]="!hasApiKey()" (click)="!hasApiKey() ? $event.stopPropagation() : closeApiKeyModal()">
+      <div class="w-full max-w-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl" (click)="$event.stopPropagation()">
+        <header class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">Manage Google AI API Key</h2>
+          @if (hasApiKey()) {
+            <button (click)="closeApiKeyModal()" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-2xl leading-none">&times;</button>
+          }
+        </header>
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Your API key is stored only in your browser's local storage and is never sent to our servers. You can get your free API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-indigo-500 hover:underline">Google AI Studio</a>.
+          </p>
+          <div class="flex flex-col gap-2">
+            <label for="apiKeyInput" class="font-semibold text-gray-700 dark:text-gray-300">Your API Key</label>
+            <input id="apiKeyInput" type="password" [value]="apiKeyInput()" (input)="apiKeyInput.set($event.target.value); apiKeyValidation.set({ status: 'idle', message: '' })" (keydown.enter)="saveApiKey()" placeholder="Enter your Google AI API key" class="w-full p-3 bg-gray-100/50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500">
+          </div>
+          
+          <div class="min-h-[20px] text-sm text-center">
+            @if (apiKeyValidation().status === 'invalid') {
+              <p class="text-red-500 dark:text-red-400">{{ apiKeyValidation().message }}</p>
+            }
+            @if (apiKeyValidation().status === 'valid') {
+              <p class="text-green-500 dark:text-green-400">{{ apiKeyValidation().message }}</p>
+            }
+          </div>
+          
+          @if (hasApiKey() && !apiKeyInput()) {
+            <p class="text-xs text-gray-500">Current key: ...{{apiKeyService.apiKey()?.slice(-4)}}</p>
+          }
+        </div>
+        <footer class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-end items-center gap-3">
+          @if (hasApiKey()) {
+            <button (click)="clearApiKey()" class="px-4 py-2 text-sm font-semibold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50 rounded-md hover:bg-red-200 dark:hover:bg-red-900/80 transition-colors">Clear Key</button>
+          }
+          <button (click)="saveApiKey()" [disabled]="!apiKeyInput().trim() || apiKeyValidation().status === 'validating'" class="relative inline-flex items-center justify-center px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-32">
+            @if (apiKeyValidation().status === 'validating') {
+              <div class="flex items-center gap-2">
+                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span>Validating...</span>
+              </div>
+            } @else {
+              <span>Save Key</span>
+            }
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+
+  <!-- About Modal -->
+  @if (isAboutModalOpen()) {
+    <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="closeAboutModal()">
+      <div class="w-full max-w-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl" (click)="$event.stopPropagation()">
+        <header class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">About This Application</h2>
+          <button (click)="closeAboutModal()" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 text-2xl leading-none">&times;</button>
+        </header>
+        <div class="p-6 space-y-4">
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            This application was created to demonstrate the power of generative AI for content creation workflows.
+          </p>
+          <div class="text-sm">
+            <p class="font-semibold text-gray-700 dark:text-gray-300">Created by:</p>
+            <p class="text-gray-600 dark:text-gray-400">Google AI Studio Team</p>
+          </div>
+          <div class="text-sm">
+            <p class="font-semibold text-gray-700 dark:text-gray-300">AI Models Used:</p>
+            <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">
+              <li><strong>Text Generation:</strong> Google Gemini 2.5 Flash (<code>gemini-2.5-flash</code>)</li>
+              <li><strong>Image Generation:</strong> Google Imagen 3.0 (<code>imagen-3.0-generate-002</code>)</li>
+            </ul>
+          </div>
+        </div>
+        <footer class="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+          <button (click)="closeAboutModal()" class="px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Close</button>
+        </footer>
+      </div>
+    </div>
   }
 </div>
